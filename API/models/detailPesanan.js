@@ -15,6 +15,15 @@ const OrderDetail = db.define('orderDetail',{
         type : DataTypes.INTEGER,
         allowNull : false
     },
-    
-
+    total_harga : {
+        type : DataTypes.INTEGER,
+        allowNull : false
+    },
+    status : {
+        type : DataTypes.ENUM(['','',''])
+    }
 })
+
+module.exports = {
+    OrderDetail
+}

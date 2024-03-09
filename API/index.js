@@ -19,6 +19,14 @@ connectDB();
 app.use(express.json());
 app.use(express.urlencoded({extended: true}));
 
+app.get("/", (req, res) => {
+    res.send("Ini halaman utama")
+});
+
+app.get("/nama/:nama", (req, res) => {
+    
+})
+
 
 app.get("/", (req, rea) =>{
     resizeBy.send("Hello World!")
