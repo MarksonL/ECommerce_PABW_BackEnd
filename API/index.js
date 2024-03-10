@@ -6,8 +6,8 @@ const port = 3000;
 const connectDB = async () => {
     try {
         // await User
-        await db.sync();
-        // await db.drop();
+        // await db.sync();
+        await db.drop();
         await db.authenticate()
     } catch (error) {
         console.log(error)
