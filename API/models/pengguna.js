@@ -22,11 +22,11 @@ const User = db.define('users',{
     },
     alamat : {
         type : DataTypes.STRING,
-        allowNull : false
+        // allowNull : false
     },
     nomorTelepon : {
         type : DataTypes.INTEGER,
-        allowNull : false
+        // allowNull : false
     },
     role : {
         type : DataTypes.INTEGER,
