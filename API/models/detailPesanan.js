@@ -20,7 +20,15 @@ const OrderDetail = db.define('orderDetail',{
         allowNull : false
     },
     status : {
-        type : DataTypes.ENUM(['','',''])
+        type : DataTypes.ENUM(['menunggu penjual',
+        'diproses penjual',
+        'menunggu kurir',
+        'sedang dikirim',
+        'sampai di tujuan',
+        'diterima pembeli',
+        'dikomplain',
+        'dikirim balik',
+        'transaksi gagal'])
     }
 })
 

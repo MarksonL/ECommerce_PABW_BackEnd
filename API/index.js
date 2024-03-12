@@ -1,7 +1,7 @@
 const express = require("express");
 const { db } = require("./models/index");
-
 const app = express();
+const jwt = require("jsonwebtoken");
 const port = 3000;
 
 const connectDB = async () => {
@@ -14,7 +14,6 @@ const connectDB = async () => {
         console.log(error)
     }
 } 
-
 connectDB();
 
 app.use(express.json());
@@ -24,42 +23,12 @@ app.get("/", (req, rea) =>{
     resizeBy.send("Hello World!")
 });
 
-// app.get("/nama/:nama", (req, res) => {
-//     const { nama } = req.params;
-//     const { umur } = req.query;
-  
-//     if (umur) {
-//       return res.send(`Halo ${nama}, kamu berumur ${umur} tahun`);
-//     }
-  
-//     return res.send(`Halo ${nama}`);
-//   });
-  
-//   app.post("/user", async (req, res) => {
-  
-//     const { fullname, email, password } = req.body;
-  
-//     try {
-//       const post_data = await db.query(
-//         `INSERT INTO users(fullname, email, password) VALUES('${fullname}', '${email}', '${password}}')`
-//       );
-//       return res.status(200).json({
-//         message: "User Created",
-//         data: post_data,
-//       });
-//     } catch (error) {
-//       return res.status(400).json({
-//         message: error,
-//       });
-//     }
-//   });
-
-  app.post("/users", async (req, res) =>{
-    const{fullname, email, password} = req.body;
+  app.post("/daftar", async (req, res) =>{
+    const{fullname, email, password, role} = req.body;
 
     try{
         const post_data = await db.query(
-            `INSERT INTO users(fullname, email, password) VALUES('${fullname}', '${email}', '${password}')`
+            `INSERT INTO users(fullname, email, password, role) VALUES('${fullname}', '${email}', '${password}', '${role}')`
             );
         return res.status(200).json({
             message:"User Created",
@@ -75,7 +44,7 @@ app.get("/", (req, rea) =>{
   app.get("/users", async (req, res) => {
     try {
       const User = await db.query(
-        "SELECT id, fullname FROM user"
+        "SELECT fullname, email, password FROM users"
       );
       return res.status(200).json({
         message: "Berhasil mendapatkan Users",

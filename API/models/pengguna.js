@@ -29,7 +29,9 @@ const User = db.define('users',{
         // allowNull : false
     },
     role : {
-        type : DataTypes.INTEGER,
+        type : DataTypes.ENUM(['ADMIN',
+        'PENGGUNA',
+        'KURIR',]),
         allowNull : false
     },
     saldoElektronik : {

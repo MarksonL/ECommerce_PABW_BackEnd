@@ -21,16 +21,7 @@ const Product = db.define('product', {
     },
     statusProduk : {
         type : DataTypes.ENUM(['stok kosong',
-        'stok tersedia',
-        'menunggu penjual',
-        'diproses penjual',
-        'menunggu kurir',
-        'sedang dikirim',
-        'sampai di tujuan',
-        'diterima pembeli',
-        'dikomplain',
-        'dikirim balik',
-        'transaksi gagal'])
+        'stok tersedia'])
     }
 })
 
