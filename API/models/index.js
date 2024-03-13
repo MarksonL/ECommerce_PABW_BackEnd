@@ -4,6 +4,7 @@ const { Order } = require("./pesanan")
 const { Product } = require("./produk")
 const {OrderDetail} = require("./detailPesanan")
 const {Cart} = require("./keranjang")
+const {logs} = require("./logs")
 
 User.hasMany(Cart, {
     onDelete : "SET NULL"
@@ -39,5 +40,6 @@ module.exports = {
     Order,
     Product,
     OrderDetail,
-    Cart
+    Cart,
+    logs
 }
