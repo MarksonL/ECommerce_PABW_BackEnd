@@ -1,4 +1,5 @@
 const { User } = require("../models/index.js");
+const {logs} = require("../models/index.js")
 const jwt = require("jsonwebtoken");
 // const bcrypt = require('bcrypt');
 const dotenv = require("dotenv");
@@ -15,7 +16,14 @@ const register = async (req, res) => {
       role: "PENGGUNA",
       saldoElektronik: 0,
     });
-
+    if (newUser) {
+      const newUserLog = await logs.create({
+        pesan: `New user with ID ${newUser.id_user} registers`,
+        waktu: Date.now(),
+      });
+    } else {
+      message : error.message
+    };
     return res.status(200).json({
       message: "User Created",
       data: newUser,
@@ -36,6 +44,10 @@ const login = async (req, res) => {
         email,
       },
     });
+    const userLog = await logs.create({
+      pesan : `User with ID ${user.id_user} logs in`,
+      waktu : Date.now()
+    })
     
     console.log(typeof user.password);
     console.log(typeof password);
@@ -53,7 +65,7 @@ const login = async (req, res) => {
           { expiresIn: "3h" }
         );
         return res.status(200).json({
-          msg: "Berhasil login!",
+          msg: "Login Success",
           token: accessToken,
         });
       } else {
@@ -68,6 +80,7 @@ const login = async (req, res) => {
         msg: "User not found",
       });
     }
+    
   } catch (error) {
     console.log(error.message);
     return res.status(500).json({
