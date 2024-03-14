@@ -1,4 +1,5 @@
 const { User } = require("../models/index.js");
+const {logs} = require("../models/index.js")
 
 const register = async (req, res) => {
   const { fullname, email, password } = req.body;
@@ -11,7 +12,14 @@ const register = async (req, res) => {
       role: "PENGGUNA",
       saldoElektronik: 0,
     });
-
+    if (newUser) {
+      const newUserLog = await logs.create({
+        pesan: `New user with ID ${newUser.id_user} registers`,
+        waktu: Date.now(),
+      });
+    } else {
+      message : error.message
+    };
     return res.status(200).json({
       message: "User Created",
       data: newUser,
@@ -32,11 +40,16 @@ const login = async (req, res) => {
         email,
       },
     });
+    const userLog = await logs.create({
+      pesan : `User with ID ${user.id_user} logs in`,
+      waktu : Date.now()
+    })
     console.log(user);
     return res.status(200).json({
       msg: "Login Success",
       user,
     });
+    
   } catch (error) {
     console.log(error.message);
   }
