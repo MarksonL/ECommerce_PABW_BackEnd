@@ -14,8 +14,16 @@ const Order = db.define('orders',{
     totalPrice : {
         type : DataTypes.INTEGER,
         allowNull : false
+    },
+    id_kurir: {
+        type: DataTypes.INTEGER,
+        allowNull: true, // Jika setiap pesanan tidak selalu memiliki kurir
+        references: {
+            model: 'users',
+            key: 'id_user'
+        }
     }
-})
+});
 
 module.exports = {
     Order

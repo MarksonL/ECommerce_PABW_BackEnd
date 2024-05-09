@@ -1,36 +1,70 @@
-const { User } = require("../models/index.js");
-const {logs} = require("../models/index.js")
+const { User, Cart } = require("../models/index.js");
+const { logs } = require("../models/index.js");
 const jwt = require("jsonwebtoken");
+const { registrationSchema } = require("../utils/joiValidation.js")
 // const bcrypt = require('bcrypt');
 const dotenv = require("dotenv");
 dotenv.config();
 
-const register = async (req, res) => {
-  const { fullname, email, password } = req.body;
+const createUser = async (
+  fullname,
+  email,
+  password,
+  alamat = null,
+  nomorTelepon = null,
+  role,
+  saldoElektronik = 0
+) => {
+  const formattedUppercaseRole = role.toUpperCase();
 
+  return await User.create({
+    fullname,
+    email,
+    password,
+    alamat,
+    nomorTelepon,
+    role: formattedUppercaseRole,
+    saldoElektronik,
+  });
+};
+
+const createCart = async (userId) => {
+  return await Cart.create({
+    id_user: userId,
+    total_price: 0,
+  });
+};
+
+const register = async (req, res) => {
   try {
-    const newUser = await User.create({
-      fullname,
-      email,
-      password,
-      role: "PENGGUNA",
-      saldoElektronik: 0,
-    });
+    const { error, value } = registrationSchema.validate(req.body);
+
+    if (error) {
+      return res.status(400).json({ message: error.details[0].message });
+    }
+
+    const { fullname, email, password } = value;
+
+    const newUser = await createUser(fullname, email, password, null, null, "PENGGUNA", 0);
+
     if (newUser) {
-      const newUserLog = await logs.create({
+      await createCart(newUser.id_user);
+
+      await logs.create({
         pesan: `New user with ID ${newUser.id_user} registers`,
         waktu: Date.now(),
       });
+
+      return res.status(200).json({
+        message: "User Created",
+        data: newUser,
+      });
     } else {
-      message : error.message
-    };
-    return res.status(200).json({
-      message: "User Created",
-      data: newUser,
-    });
+      throw new Error("Failed to create user");
+    }
   } catch (error) {
     return res.status(400).json({
-      message: error.message, // Menggunakan pesan kesalahan yang lebih informatif
+      message: error.message,
     });
   }
 };
@@ -44,17 +78,19 @@ const login = async (req, res) => {
         email,
       },
     });
-    const userLog = await logs.create({
-      pesan : `User with ID ${user.id_user} logs in`,
-      waktu : Date.now()
-    })
-    
+
+    await logs.create({
+      pesan: `User with ID ${user.id_user} logs in`,
+      waktu: Date.now(),
+    });
+
     console.log(typeof user.password);
     console.log(typeof password);
 
     if (user) {
       // User found, now check password
-      if (password == user.password) { // Perbandingan string sederhana
+      if (password == user.password) {
+        // Perbandingan string sederhana
         const accessToken = jwt.sign(
           {
             userId: user.id_user,
@@ -80,7 +116,6 @@ const login = async (req, res) => {
         msg: "User not found",
       });
     }
-    
   } catch (error) {
     console.log(error.message);
     return res.status(500).json({
@@ -98,14 +133,13 @@ const decodedToken = (req, res) => {
     const fullname = decoded.fullname;
     const role = decoded.role;
     return res.status(200).json({
-      msg: 'Authorized',
+      msg: "Authorized",
       payload: {
         userId,
         fullname,
         role,
-      }
-    })
-      
+      },
+    });
   });
 };
 
@@ -113,4 +147,6 @@ module.exports = {
   register,
   login,
   decodedToken,
+  createUser,
+  createCart,
 };

@@ -25,7 +25,7 @@ const User = db.define("users", {
     // allowNull : false
   },
   nomorTelepon: {
-    type: DataTypes.INTEGER,
+    type: DataTypes.STRING,
     // allowNull : false
   },
   role: {

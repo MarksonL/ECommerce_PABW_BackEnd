@@ -1,17 +1,17 @@
 const {db} = require("../config/db");
 const {DataTypes} = require("sequelize");
 
-const Cart = db.define ("cart",{
-    id_keranjang : {
+const detailCart = db.define ("detail_cart",{
+    id_detail_keranjang : {
         primaryKey : true,
         type : DataTypes.INTEGER,
         autoIncrement : true
     },
-    total_price : {
+    jumlah_barang : {
         type : DataTypes.INTEGER
     }
 })
 
 module.exports = {
-    Cart
+    detailCart
 }
