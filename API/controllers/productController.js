@@ -69,6 +69,19 @@ const getAllProductsByUserID = async (req, res) => {
   }
 };
 
+const getProductById = async (req, res) => {
+  const { id_product } = req.params
+  try {
+    const product = await Product.findByPk(id_product)
+    return res.status(200).json({
+      message: "Successfully retrieved product",
+      data: product,
+    })
+  } catch (error) {
+    console.log(error)
+  }
+}
+
 // Fungsi untuk mengedit produk berdasarkan ID
 const editProduct = async (req, res) => {
   const productId = req.params.id_product;
@@ -150,6 +163,7 @@ const deleteProduct = async (req, res) => {
 module.exports = {
   createProduct2,
   getAllProducts,
+  getProductById,
   getAllProductsByUserID,
   editProduct,
   deleteProduct,

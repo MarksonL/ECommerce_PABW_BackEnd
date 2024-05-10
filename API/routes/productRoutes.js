@@ -6,6 +6,7 @@ const {
   getAllProductsByUserID,
   editProduct,
   deleteProduct,
+  getProductById
 } = require("../controllers/productController.js");
 const { authenticateUser } = require("../middleware/authMiddleware.js");
 const upload = require("../middleware/multer.js");
@@ -13,6 +14,8 @@ const upload = require("../middleware/multer.js");
 productRoute.post("/", authenticateUser, upload.array('imagesProduct', 5) ,createProduct2);
 
 productRoute.get("/", getAllProducts);
+
+productRoute.get("/:id_product", getProductById);
 
 productRoute.get("/me", authenticateUser, getAllProductsByUserID);
 
