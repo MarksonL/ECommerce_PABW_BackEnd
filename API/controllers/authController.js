@@ -143,10 +143,25 @@ const decodedToken = (req, res) => {
   });
 };
 
+const getMe = async (req, res) => {
+  const user = req.user;
+  try {
+    const userData = await User.findByPk(user.id_user)
+
+    return res.status(200).json({
+      message: "User has been retrieved",
+      data: userData,
+    })
+  } catch (error) {
+    return res.status(500).json({ error: error });
+  }
+}
+
 module.exports = {
   register,
   login,
   decodedToken,
   createUser,
   createCart,
+  getMe,
 };
