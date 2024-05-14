@@ -159,7 +159,7 @@ const addSaldoElektronik = async (req, res) => {
     }
 
     // Pastikan saldoToAdd adalah angka positif
-    if (isNaN(saldoElektronik) || saldoElektronik <= 0) {
+    if (isNaN(saldoElektronik) || (user.saldoElektronik + parseInt(saldoElektronik)) < 0) {
       return res.status(400).json({ message: "Invalid saldo value." });
     }
 
