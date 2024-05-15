@@ -6,7 +6,7 @@ const { addUser, getAllUsers, getUserById, editUser, deleteUser, addSaldoElektro
 
 adminRoutes.get("/logs", authenticateUser, isAdmin, getAllLogs);
 
-adminRoutes.get("/users", authenticateUser, isAdmin, getAllUsers);
+adminRoutes.get("/users", authenticateUser, getAllUsers);
 
 adminRoutes.get("/users/:id_user", authenticateUser, isAdmin, getUserById);
 
