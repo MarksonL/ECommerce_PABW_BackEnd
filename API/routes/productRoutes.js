@@ -15,12 +15,12 @@ productRoute.post("/", authenticateUser, upload.array('imagesProduct', 5) ,creat
 
 productRoute.get("/", getAllProducts);
 
-productRoute.get("/:id_product", getProductById);
-
 productRoute.get("/me", authenticateUser, getAllProductsByUserID);
 
 productRoute.patch("/:id_product", authenticateUser, upload.array('imagesProduct', 5) ,editProduct);
 
 productRoute.delete("/:id_product", authenticateUser, deleteProduct);
+
+productRoute.get("/:id_product", getProductById);
 
 module.exports = productRoute;

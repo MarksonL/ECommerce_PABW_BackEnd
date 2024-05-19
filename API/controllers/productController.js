@@ -82,7 +82,6 @@ const getProductById = async (req, res) => {
   }
 }
 
-// Fungsi untuk mengedit produk berdasarkan ID
 const editProduct = async (req, res) => {
   const productId = req.params.id_product;
   const user = req.user;

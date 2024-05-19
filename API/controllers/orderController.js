@@ -291,9 +291,11 @@ const editOrderDetailStatus = async (req, res) => {
     // Dapatkan status pesanan sebelumnya
     const currentStatus = orderDetail.status;
     const barangPesanan = orderDetail.id_product;
+    const jumlahBarang = orderDetail.jumlahBarang;
 
     const productDetail = await Product.findByPk(barangPesanan);
     const userPenjual = productDetail.id_user;
+    const harga = productDetail.hargaProduk;
 
     const dataOrder = await Order.findByPk(orderDetail.id_order);
     const userKurir = dataOrder.id_kurir;
@@ -318,7 +320,7 @@ const editOrderDetailStatus = async (req, res) => {
 
       // Jika status pesanan menjadi "diterima pembeli", tambahkan saldo elektronik kepada penjual
       if (newStatus === "diterima pembeli") {
-        await addBalanceToSeller(barangPesanan);
+        await addBalanceToSeller(harga, jumlahBarang);
       }
 
       // Jika status pesanan menjadi "dikomplain", kembalikan uang pembeli ke saldo elektroniknya
@@ -357,14 +359,17 @@ const returnMoneyToBuyer = async (orderDetail, userPembeli) => {
   }
 };
 
-const addBalanceToSeller = async (productId) => {
+const addBalanceToSeller = async (productId, harga, quantity) => {
   try {
     // Get product details
     const product = await Product.findByPk(productId);
+    
+    // Calculate the total price
+    const totalPrice = parseInt(quantity) * harga;
 
     // Add the product price to the seller's electronic balance
     await User.increment('saldoElektronik', {
-      by: product.hargaProduk,
+      by: totalPrice,
       where: { id_user: product.id_user }
     });
   } catch (error) {
@@ -372,6 +377,7 @@ const addBalanceToSeller = async (productId) => {
     throw error;
   }
 };
+
 
 const checkPermission = (
   userRole,
