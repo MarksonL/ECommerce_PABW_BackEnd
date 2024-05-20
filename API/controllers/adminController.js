@@ -1,6 +1,7 @@
 const { User } = require("../models/index.js");
 const { createUser, createCart } = require("./authController.js");
 const { userSchema } = require("../utils/joiValidation.js");
+const { logs } = require("../models/index.js");
 
 const getAllUsers = async (req, res) => {
   try {
@@ -168,6 +169,12 @@ const addSaldoElektronik = async (req, res) => {
 
     // Simpan perubahan
     await user.save();
+
+    await logs.create({
+      type_log: "Top Up",
+      pesan: `User with ID ${id_user} Top Up ${saldoElektronik}`,
+      waktu: Date.now(),
+    });
 
     return res.status(200).json({
       message: "Saldo elektronik added successfully.",

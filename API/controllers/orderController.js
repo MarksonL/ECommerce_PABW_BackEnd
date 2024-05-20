@@ -6,6 +6,7 @@ const {
   Order,
   OrderDetail,
 } = require("../models/index");
+const { logs } = require("../models/index.js");
 
 const getAllOrder = async (req, res) => {
   try {
@@ -13,6 +14,12 @@ const getAllOrder = async (req, res) => {
     const orders = await Order.findAll({
       include: {
         model: OrderDetail,
+        include: {
+          model: Product,
+          include: {
+            model : User,
+          }
+        }
       },
     });
 
@@ -86,6 +93,11 @@ const createOrder = async (req, res) => {
       await updateOrderTotalPrice(order.id_order, totalPrice);
       await removeSelectedItemsFromCart(cart.id_keranjang, selectedItems);
 
+      await logs.create({
+        type_log: "Create Order",
+        pesan: `User with ID ${user.id_user} Create Order Product ${selectedItems}`,
+        waktu: Date.now(),
+      });
       return res.status(201).json({ message: "Order created successfully" });
     } else {
       // Jika saldo tidak cukup, simpan detail pesanan sebagai transaksi gagal
@@ -96,9 +108,7 @@ const createOrder = async (req, res) => {
         selectedItems
       );
       await updateOrderTotalPrice(order.id_order, totalPrice);
-      return res
-        .status(400)
-        .json({ message: "Insufficient balance for payment" });
+      return res.json({ message: "Insufficient balance for payment" });
     }
   } catch (error) {
     console.error(error);
@@ -154,6 +164,12 @@ const processPayment = async (userId, amount) => {
     { saldoElektronik: (await getUserBalance(userId)) - amount },
     { where: { id_user: userId } }
   );
+
+  await logs.create({
+    type_log: "Transaction",
+    pesan: `User with ID ${userId} Saldo -${amount}`,
+    waktu: Date.now(),
+  });
 };
 
 const getUserBalance = async (userId) => {
@@ -291,7 +307,7 @@ const editOrderDetailStatus = async (req, res) => {
     // Dapatkan status pesanan sebelumnya
     const currentStatus = orderDetail.status;
     const barangPesanan = orderDetail.id_product;
-    const jumlahBarang = orderDetail.jumlahBarang;
+    const quantity = orderDetail.jumlahBarang;
 
     const productDetail = await Product.findByPk(barangPesanan);
     const userPenjual = productDetail.id_user;
@@ -320,7 +336,7 @@ const editOrderDetailStatus = async (req, res) => {
 
       // Jika status pesanan menjadi "diterima pembeli", tambahkan saldo elektronik kepada penjual
       if (newStatus === "diterima pembeli") {
-        await addBalanceToSeller(harga, jumlahBarang);
+        await addBalanceToSeller(userPenjual, harga, quantity);
       }
 
       // Jika status pesanan menjadi "dikomplain", kembalikan uang pembeli ke saldo elektroniknya
@@ -353,25 +369,33 @@ const returnMoneyToBuyer = async (orderDetail, userPembeli) => {
       by: totalPrice,
       where: { id_user: userPembeli }
     });
+
+    await logs.create({
+      type_log: "Transaction",
+      pesan: `User with ID ${userPembeli} Return Saldo +${totalPrice}`,
+      waktu: Date.now(),
+    });
   } catch (error) {
     console.error("Error returning money to buyer:", error);
     throw error;
   }
 };
 
-const addBalanceToSeller = async (productId, harga, quantity) => {
+const addBalanceToSeller = async (userPenjual, harga, quantity) => {
   try {
-    // Get product details
-    const product = await Product.findByPk(productId);
-    
-    // Calculate the total price
-    const totalPrice = parseInt(quantity) * harga;
-
-    // Add the product price to the seller's electronic balance
+    // Tambahkan saldo elektronik kepada penjual berdasarkan jumlah total harga produk
     await User.increment('saldoElektronik', {
-      by: totalPrice,
-      where: { id_user: product.id_user }
+      by: harga * quantity, // Menggunakan harga produk dikali jumlah sebagai nilai penambahan saldo
+      where: { id_user: userPenjual } // Menentukan penjual berdasarkan ID pengguna
     });
+
+    await logs.create({
+      type_log: "Transaction",
+      pesan: `User with ID ${userPenjual} Saldo +${harga*quantity}`,
+      waktu: Date.now(),
+    });
+
+    console.log("Balance added to seller successfully");
   } catch (error) {
     console.error("Error adding balance to seller:", error);
     throw error;
