@@ -1,4 +1,5 @@
 const { User } = require('../models/index.js');
+const { logs } = require("../models/index.js");
 
 const editUserProfile = async (req, res) => {
   const userId = req.user.id_user;
@@ -21,6 +22,11 @@ const editUserProfile = async (req, res) => {
 
     // Simpan perubahan pada profil pengguna dan simpan ke dalam updatedUser
     const updatedUser = await user.save();
+    await logs.create({
+      type_log: "Update Profile",
+      pesan: `User with ID ${userId} Updating Profile`,
+      waktu: Date.now(),
+    });
 
     return res.status(200).json({ message: "User profile updated successfully", updatedUser });
   } catch (error) {

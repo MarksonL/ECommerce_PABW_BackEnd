@@ -1,4 +1,5 @@
 const { logs } = require('../models/logs');
+const { Op } = require('sequelize');
 
 const getAllLogs = async (req, res) => {
     try {
@@ -14,6 +15,30 @@ const getAllLogs = async (req, res) => {
     }
 };
 
+
+const getTransactionHistory = async (req, res) => {
+  const userId = req.user.id_user;
+  try {
+    const transactionHistory = await logs.findAll({
+      where: {
+        type_log: {
+          [Op.in]: ['Transaction', 'Top Up'],
+        },
+        pesan: {
+          [Op.like]: `%User with ID ${userId}%`,
+        },
+      },
+      order: [['waktu', 'DESC']],
+    });
+    res.json({data: transactionHistory});
+  } catch (error) {
+    console.error("Error fetching transaction history:", error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+};
+
+
 module.exports = {
-    getAllLogs
+    getAllLogs,
+    getTransactionHistory,
 };
