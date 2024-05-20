@@ -14,6 +14,12 @@ const getAllOrder = async (req, res) => {
     const orders = await Order.findAll({
       include: {
         model: OrderDetail,
+        include: {
+          model: Product,
+          include: {
+            model : User,
+          }
+        }
       },
     });
 
