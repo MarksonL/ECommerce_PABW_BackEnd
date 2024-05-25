@@ -19,6 +19,8 @@ productRoute.get("/:id_product", getProductById);
 
 productRoute.get("/me", authenticateUser, getAllProductsByUserID);
 
+productRoute.get("/:id_product", getProductById);
+
 productRoute.patch("/:id_product", authenticateUser, upload.array('imagesProduct', 5) ,editProduct);
 
 productRoute.delete("/:id_product", authenticateUser, deleteProduct);

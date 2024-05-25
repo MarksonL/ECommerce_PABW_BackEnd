@@ -7,6 +7,10 @@ const logs = db.define('logs', {
         type : DataTypes.INTEGER,
         autoIncrement : true
     },
+    type_log : {
+        type : DataTypes.STRING,
+        allowNull: false,
+    },
     pesan : {
         type : DataTypes.STRING,
         allowNull : false

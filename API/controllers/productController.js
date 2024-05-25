@@ -1,4 +1,5 @@
 const { Product } = require("../models/index.js");
+const { logs } = require("../models/index.js");
 
 const createProduct2 = async (req, res) => {
   const { namaProduk, hargaProduk, stokProduk, statusProduk, description } = req.body;
@@ -20,10 +21,18 @@ const createProduct2 = async (req, res) => {
       description
     });
 
+    await logs.create({
+      type_log: "Create Product",
+      pesan: `User with ID ${user.id_user} Create Produk ${newProduct.id_product}`,
+      waktu: Date.now(),
+    });
+
     return res.status(201).json({
       message: 'Product created successfully',
       data: newProduct
     });
+
+    
   } catch (error) {
     return res.status(500).json({
       message: 'Internal server error'
@@ -50,7 +59,7 @@ const getAllProducts = async (req, res) => {
 // Fungsi untuk mendapatkan semua produk berdasarkan ID pengguna
 const getAllProductsByUserID = async (req, res) => {
   const user = req.user; // Ambil informasi pengguna dari objek permintaan
-
+  console.log(user)
   try {
     const products = await Product.findAll({
       where: {
@@ -101,7 +110,7 @@ const editProduct = async (req, res) => {
       return res.status(404).json({ message: "Product not found" });
     }
 
-    if (existingProduct.id_user !== user.id_user) {
+    if (existingProduct.id_user !== user.id_user && user.role !== 'ADMIN') {
       return res.status(403).json({ message: "You are not authorized to edit this product" });
     }
 
@@ -124,7 +133,11 @@ const editProduct = async (req, res) => {
 
     // Ambil data produk yang telah diperbarui dari database
     const updatedProduct = await Product.findByPk(productId);
-
+    await logs.create({
+      type_log: "Update Product",
+      pesan: `User with ID ${user.id_user} Update Produk ${productId}`,
+      waktu: Date.now(),
+    });
     return res.status(200).json({ message: "Product updated successfully", data: updatedProduct });
   } catch (error) {
     return res.status(500).json({ message: "Internal server error" });
@@ -143,7 +156,7 @@ const deleteProduct = async (req, res) => {
       return res.status(404).json({ message: "Product not found" });
     }
 
-    if (existingProduct.id_user !== user.id_user) {
+    if (existingProduct.id_user !== user.id_user && user.role !== 'ADMIN') {
       return res.status(403).json({ message: "You are not authorized to delete this product" });
     }
 
@@ -152,6 +165,12 @@ const deleteProduct = async (req, res) => {
       where: {
         id_product: productId,
       },
+    });
+
+    await logs.create({
+      type_log: "Delete Product",
+      pesan: `User with ID ${user.id_user} Delete Produk ${productId}`,
+      waktu: Date.now(),
     });
 
     return res.status(200).json({ message: "Product deleted successfully" });

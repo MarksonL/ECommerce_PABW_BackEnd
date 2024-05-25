@@ -57,7 +57,7 @@ const isAdmin = async (req, res, next) => {
     const user = req.user; // Ambil informasi pengguna dari objek permintaan
 
     // Periksa apakah pengguna memiliki peran sebagai admin
-    if (user.role === 'ADMIN') {
+    if (user.role === 'ADMIN' || user.role === 'KURIR') {
       // Jika pengguna adalah admin, lanjutkan ke langkah berikutnya
       next();
     } else {

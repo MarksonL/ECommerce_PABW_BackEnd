@@ -6,6 +6,8 @@ const {
   Order,
   OrderDetail,
 } = require("../models/index");
+const { logs } = require("../models/index.js");
+const Sequelize = require('sequelize')
 
 const getAllOrder = async (req, res) => {
   try {
@@ -13,6 +15,33 @@ const getAllOrder = async (req, res) => {
     const orders = await Order.findAll({
       include: {
         model: OrderDetail,
+        include: {
+          model: Product,
+          include: {
+            model : User,
+          }
+        }
+      },
+    });
+
+    return res.status(200).json({ orders });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+const getAllOrderBuyer = async (req, res) => {
+  const userId = req.user.id_user
+  try {
+    // Ambil semua pesanan beserta detailnya
+    const orders = await Order.findAll({
+      where: { id_user : userId },
+      include: {
+        model: OrderDetail,
+        include: {
+          model: Product
+        }
       },
     });
 
@@ -86,6 +115,12 @@ const createOrder = async (req, res) => {
       await updateOrderTotalPrice(order.id_order, totalPrice);
       await removeSelectedItemsFromCart(cart.id_keranjang, selectedItems);
 
+      await logs.create({
+        type_log: "Create Order",
+        pesan: `User with ID ${user.id_user} Create Order Product ${selectedItems}`,
+        waktu: Date.now(),
+      });
+
       return res.status(201).json({ message: "Order created successfully" });
     } else {
       // Jika saldo tidak cukup, simpan detail pesanan sebagai transaksi gagal
@@ -96,9 +131,7 @@ const createOrder = async (req, res) => {
         selectedItems
       );
       await updateOrderTotalPrice(order.id_order, totalPrice);
-      return res
-        .status(400)
-        .json({ message: "Insufficient balance for payment" });
+      return res.json({ message: "Insufficient balance for payment" });
     }
   } catch (error) {
     console.error(error);
@@ -154,6 +187,12 @@ const processPayment = async (userId, amount) => {
     { saldoElektronik: (await getUserBalance(userId)) - amount },
     { where: { id_user: userId } }
   );
+
+  await logs.create({
+    type_log: "Transaction",
+    pesan: `User with ID ${userId} Saldo -${amount}`,
+    waktu: Date.now(),
+  });
 };
 
 const getUserBalance = async (userId) => {
@@ -291,9 +330,11 @@ const editOrderDetailStatus = async (req, res) => {
     // Dapatkan status pesanan sebelumnya
     const currentStatus = orderDetail.status;
     const barangPesanan = orderDetail.id_product;
+    const quantity = orderDetail.jumlahBarang;
 
     const productDetail = await Product.findByPk(barangPesanan);
     const userPenjual = productDetail.id_user;
+    const harga = productDetail.hargaProduk;
 
     const dataOrder = await Order.findByPk(orderDetail.id_order);
     const userKurir = dataOrder.id_kurir;
@@ -318,7 +359,7 @@ const editOrderDetailStatus = async (req, res) => {
 
       // Jika status pesanan menjadi "diterima pembeli", tambahkan saldo elektronik kepada penjual
       if (newStatus === "diterima pembeli") {
-        await addBalanceToSeller(barangPesanan);
+        await addBalanceToSeller(userPenjual, harga, quantity);
       }
 
       // Jika status pesanan menjadi "dikomplain", kembalikan uang pembeli ke saldo elektroniknya
@@ -351,22 +392,32 @@ const returnMoneyToBuyer = async (orderDetail, userPembeli) => {
       by: totalPrice,
       where: { id_user: userPembeli }
     });
+    await logs.create({
+      type_log: "Transaction",
+      pesan: `User with ID ${userPembeli} Return Saldo +${totalPrice}`,
+      waktu: Date.now(),
+    });
   } catch (error) {
     console.error("Error returning money to buyer:", error);
     throw error;
   }
 };
 
-const addBalanceToSeller = async (productId) => {
+const addBalanceToSeller = async (userPenjual, harga, quantity) => {
   try {
-    // Get product details
-    const product = await Product.findByPk(productId);
-
-    // Add the product price to the seller's electronic balance
+    // Tambahkan saldo elektronik kepada penjual berdasarkan jumlah total harga produk
     await User.increment('saldoElektronik', {
-      by: product.hargaProduk,
-      where: { id_user: product.id_user }
+      by: harga * quantity, // Menggunakan harga produk dikali jumlah sebagai nilai penambahan saldo
+      where: { id_user: userPenjual } // Menentukan penjual berdasarkan ID pengguna
     });
+
+    await logs.create({
+      type_log: "Transaction",
+      pesan: `User with ID ${userPenjual} Saldo +${harga*quantity}`,
+      waktu: Date.now(),
+    });
+
+    console.log("Balance added to seller successfully");
   } catch (error) {
     console.error("Error adding balance to seller:", error);
     throw error;
@@ -443,6 +494,30 @@ const getAllDetailOrdersByProductOwner = async (req, res) => {
             where: { id_user: userId }, // Filter berdasarkan id_penjual (penjual)
           },
         },
+    });
+
+    return res.status(200).json({ orders });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+const getAllDetailOrdersByKurir = async (req, res) => {
+  const userId = req.user.id_user;
+
+  try {
+    // Ambil semua pesanan yang memiliki produk yang dimiliki oleh penjual
+    const orders = await Order.findAll({
+      where: { id_kurir: userId },
+      include: [
+        {
+          model: OrderDetail,
+          include: {
+            model: Product,
+          },
+        }
+      ],
     });
 
     return res.status(200).json({ orders });

@@ -51,6 +51,7 @@ const register = async (req, res) => {
       await createCart(newUser.id_user);
 
       await logs.create({
+        type_log: "Register",
         pesan: `New user with ID ${newUser.id_user} registers`,
         waktu: Date.now(),
       });
@@ -80,6 +81,7 @@ const login = async (req, res) => {
     });
 
     await logs.create({
+      type_log: "Login",
       pesan: `User with ID ${user.id_user} logs in`,
       waktu: Date.now(),
     });
