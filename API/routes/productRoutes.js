@@ -15,6 +15,8 @@ productRoute.post("/", authenticateUser, upload.array('imagesProduct', 5) ,creat
 
 productRoute.get("/", getAllProducts);
 
+productRoute.get("/:id_product", getProductById);
+
 productRoute.get("/me", authenticateUser, getAllProductsByUserID);
 
 productRoute.get("/:id_product", getProductById);
