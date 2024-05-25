@@ -52,27 +52,6 @@ const getAllOrderBuyer = async (req, res) => {
   }
 };
 
-const getAllOrderBuyer = async (req, res) => {
-  const userId = req.user.id_user
-  try {
-    // Ambil semua pesanan beserta detailnya
-    const orders = await Order.findAll({
-      where: { id_user : userId },
-      include: {
-        model: OrderDetail,
-        include: {
-          model: Product
-        }
-      },
-    });
-
-    return res.status(200).json({ orders });
-  } catch (error) {
-    console.error(error);
-    return res.status(500).json({ message: "Internal server error" });
-  }
-};
-
 const createOrder = async (req, res) => {
   const user = req.user;
   let { selectedItems, kurirId } = req.body; // Tambahan kurirId dari body
@@ -518,28 +497,6 @@ const getAllDetailOrdersByKurir = async (req, res) => {
           },
         }
       ],
-    });
-
-    return res.status(200).json({ orders });
-  } catch (error) {
-    console.error(error);
-    return res.status(500).json({ message: "Internal server error" });
-  }
-};
-
-const getAllDetailOrdersByKurir = async (req, res) => {
-  const userId = req.user.id_user;
-
-  try {
-    // Ambil semua pesanan yang memiliki produk yang dimiliki oleh penjual
-    const orders = await Order.findAll({
-      where: { id_kurir: userId },
-      include: {
-        model: OrderDetail,
-        include: {
-          model: Product,
-        },
-      },
     });
 
     return res.status(200).json({ orders });
