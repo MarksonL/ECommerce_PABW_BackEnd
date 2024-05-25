@@ -52,6 +52,27 @@ const getAllOrderBuyer = async (req, res) => {
   }
 };
 
+const getAllOrderBuyer = async (req, res) => {
+  const userId = req.user.id_user
+  try {
+    // Ambil semua pesanan beserta detailnya
+    const orders = await Order.findAll({
+      where: { id_user : userId },
+      include: {
+        model: OrderDetail,
+        include: {
+          model: Product
+        }
+      },
+    });
+
+    return res.status(200).json({ orders });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: "Internal server error" });
+  }
+};
+
 const createOrder = async (req, res) => {
   const user = req.user;
   let { selectedItems, kurirId } = req.body; // Tambahan kurirId dari body
@@ -99,6 +120,7 @@ const createOrder = async (req, res) => {
         pesan: `User with ID ${user.id_user} Create Order Product ${selectedItems}`,
         waktu: Date.now(),
       });
+
       return res.status(201).json({ message: "Order created successfully" });
     } else {
       // Jika saldo tidak cukup, simpan detail pesanan sebagai transaksi gagal
@@ -370,7 +392,6 @@ const returnMoneyToBuyer = async (orderDetail, userPembeli) => {
       by: totalPrice,
       where: { id_user: userPembeli }
     });
-
     await logs.create({
       type_log: "Transaction",
       pesan: `User with ID ${userPembeli} Return Saldo +${totalPrice}`,
@@ -402,7 +423,6 @@ const addBalanceToSeller = async (userPenjual, harga, quantity) => {
     throw error;
   }
 };
-
 
 const checkPermission = (
   userRole,
@@ -507,6 +527,27 @@ const getAllDetailOrdersByKurir = async (req, res) => {
   }
 };
 
+const getAllDetailOrdersByKurir = async (req, res) => {
+  const userId = req.user.id_user;
+
+  try {
+    // Ambil semua pesanan yang memiliki produk yang dimiliki oleh penjual
+    const orders = await Order.findAll({
+      where: { id_kurir: userId },
+      include: {
+        model: OrderDetail,
+        include: {
+          model: Product,
+        },
+      },
+    });
+
+    return res.status(200).json({ orders });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: "Internal server error" });
+  }
+};
 
 module.exports = {
   getAllDetailOrdersByProductOwner,
