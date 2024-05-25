@@ -7,6 +7,7 @@ const {
   OrderDetail,
 } = require("../models/index");
 const { logs } = require("../models/index.js");
+const Sequelize = require('sequelize')
 
 const getAllOrder = async (req, res) => {
   try {
@@ -489,12 +490,14 @@ const getAllDetailOrdersByKurir = async (req, res) => {
     // Ambil semua pesanan yang memiliki produk yang dimiliki oleh penjual
     const orders = await Order.findAll({
       where: { id_kurir: userId },
-      include: {
-        model: OrderDetail,
-        include: {
-          model: Product,
-        },
-      },
+      include: [
+        {
+          model: OrderDetail,
+          include: {
+            model: Product,
+          },
+        }
+      ],
     });
 
     return res.status(200).json({ orders });
@@ -503,6 +506,7 @@ const getAllDetailOrdersByKurir = async (req, res) => {
     return res.status(500).json({ message: "Internal server error" });
   }
 };
+
 
 module.exports = {
   getAllDetailOrdersByProductOwner,
