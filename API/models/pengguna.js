@@ -36,6 +36,14 @@ const User = db.define("users", {
     type: DataTypes.INTEGER,
     allowNull: false,
   },
+  isVerified: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: false
+  },
+  verificationToken: {
+    type: DataTypes.STRING,
+    allowNull: true
+  },
 });
 
 module.exports = {
