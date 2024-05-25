@@ -5,6 +5,7 @@ const port = 3000;
 const cors = require("cors");
 const indexRoute = require('./routes/index.js');
 const path = require('path')
+const bodyParser = require('body-parser');
 
 const connectDB = async () => {
   try {
@@ -20,6 +21,7 @@ connectDB();
 
 app.use(cors());
 app.use(express.json());
+// app.use(bodyParser.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(indexRoute)
 
